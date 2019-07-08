@@ -11,8 +11,8 @@ export const minuteHeight = timeGridHeight / timeGridMinutesPart
 const timeGridParts = () => {
   const gridParts = []
 
-  for (let index = 0; index < oneDayInMinutes; index += timeGridMinutesPart) {
-    gridParts.push(startDay.add(timeGridMinutesPart, 'minute').format('HH:mm'))
+  for (let minuteDiff = 0; minuteDiff < oneDayInMinutes; minuteDiff += timeGridMinutesPart) {
+    gridParts.push(startDay.add(minuteDiff, 'minute').format('HH:mm'))
   }
 
   return gridParts
