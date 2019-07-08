@@ -1,0 +1,98 @@
+{
+  "name": "Drag",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "yarn jetify && yarn react-native run-android",
+    "ios": "yarn react-native run-ios --simulator='iPhone 8'",
+    "bootstrap": "./scripts/bootstrap.sh",
+    "clean:all": "yarn clean:watchman && yarn clean:builds && yarn clean:cache && yarn clean:packages",
+    "clean:builds": "rm -rf ios/build android/build android/app/build",
+    "clean:cache": "rm -fr $TMPDIR/react-* $TMPDIR/haste-map-react-native-packager-* ~/.rncache",
+    "clean:packages": "rm -rf node_modules && yarn install",
+    "clean:watchman": "watchman watch-del-all",
+    "coverage": "open coverage/lcov-report/index.html",
+    "generate-apk": "cd android && ./gradlew assembleRelease",
+    "lint": "eslint ./ --ext .js",
+    "start": "react-native start",
+    "test": "jest -u",
+    "test:ci": "jest --coverage --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "color": "3.1.2",
+    "lodash": "4.17.11",
+    "prop-types": "15.7.2",
+    "react": "16.8.6",
+    "react-native": "0.60.0",
+    "react-native-gesture-handler": "1.3.0",
+    "react-native-reanimated": "1.1.0",
+    "react-native-screens": "1.0.0-alpha.23",
+    "react-native-vector-icons": "6.6.0",
+    "react-navigation": "3.11.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.5.0",
+    "@babel/runtime": "7.5.1",
+    "babel-eslint": "10.0.2",
+    "babel-jest": "24.8.0",
+    "babel-plugin-lodash": "3.3.4",
+    "eslint": "6.0.1",
+    "eslint-config-prettier": "6.0.0",
+    "eslint-plugin-import": "2.18.0",
+    "eslint-plugin-jest": "22.7.2",
+    "eslint-plugin-prettier": "3.1.0",
+    "eslint-plugin-react": "7.14.2",
+    "eslint-plugin-react-native": "3.7.0",
+    "eslint-plugin-sort-imports-es6-autofix": "0.4.0",
+    "flow-bin": "0.102.0",
+    "husky": "3.0.0",
+    "jest": "24.8.0",
+    "jetifier": "1.6.1",
+    "lint-staged": "9.1.0",
+    "metro-react-native-babel-preset": "0.55.0",
+    "prettier": "1.18.2",
+    "react-test-renderer": "16.8.6"
+  },
+  "jest": {
+    "preset": "react-native",
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/jest/setup.js",
+      "<rootDir>/jest/__mocks__/react-native-gesture-handler.mock.js",
+      "<rootDir>/jest/__mocks__/react-native-reanimated.mock.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native|react-navigation)"
+    ],
+    "testPathIgnorePatterns": [
+      "__e2e__",
+      "node_modules"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint",
+      "git add"
+    ]
+  },
+  "greenkeeper": {
+    "commitMessages": {
+      "addConfigFile": ":paperclip: Add Greenkeeper config file",
+      "dependencyPin": ":bug: Pin ${dependency} to ${oldVersion}",
+      "dependencyUpdate": ":gem: Update ${dependency} to version ${version}",
+      "devDependencyPin": ":bug: Pin ${dependency} to ${oldVersion}",
+      "devDependencyUpdate": ":gem: Update ${dependency} to version ${version}",
+      "initialBadge": ":memo: Add Greenkeeper badge",
+      "initialBranches": ":tada: Whitelist greenkeeper branches",
+      "initialDependencies": ":gem: Upgrade: Update dependencies",
+      "lockfileUpdate": ":lock: Lockfile ${lockfilePath}",
+      "updateConfigFile": ":paperclip: Update Greenkeeper config file"
+    }
+  }
+}

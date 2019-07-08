@@ -1,0 +1,122 @@
+{
+  "plugins": ["import", "jest", "prettier", "react", "react-native", "sort-imports-es6-autofix"],
+  "parser": "babel-eslint",
+  "extends": [
+    "eslint:recommended",
+    "plugin:jest/recommended",
+    "plugin:react-native/all",
+    "plugin:react/recommended",
+    "prettier/react"
+  ],
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jest": true,
+    "node": true
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2018
+  },
+  "settings": {
+    "react": {
+      "pragma": "React",
+      "version": "detect"
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".android.js", ".ios.js"]
+      }
+    }
+  },
+  "rules": {
+    "import/first": ["error", "always"],
+    "import/no-duplicates": ["error", "always"],
+    "import/no-unresolved": ["error", { "caseSensitive": true, "ignore": ["^src"] }],
+    "indent": "off",
+    "jest/consistent-test-it": ["error", { "fn": "test", "withinDescribe": "test" }],
+    "linebreak-style": ["error", "unix"],
+    "no-debugger": "off",
+    "object-curly-spacing": ["error", "always"],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "react/no-unused-prop-types": "error",
+    "react/prefer-stateless-function": "off",
+    "react/prop-types": "error",
+    "semi": ["warn", "never"],
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always-and-inside-groups",
+        "groups": ["builtin", "external", "internal", "parent", "index", "sibling"]
+      }
+    ],
+    "sort-imports-es6-autofix/sort-imports-es6": [
+      "error",
+      {
+        "ignoreCase": false,
+        "ignoreMemberSort": false,
+        "memberSyntaxSortOrder": ["none", "all", "single", "multiple"]
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "ignore",
+        "imports": "always-multiline",
+        "objects": "always-multiline"
+      }
+    ],
+    "react/jsx-sort-props": [
+      "error",
+      {
+        "callbacksLast": false,
+        "shorthandFirst": false,
+        "ignoreCase": true
+      }
+    ],
+    "react/sort-comp": [
+      2,
+      {
+        "order": [
+          "static-methods",
+          "constructor",
+          "state",
+          "instance-variables",
+          "lifecycle",
+          "everything-else",
+          "render"
+        ]
+      }
+    ],
+    "prettier/prettier": [
+      "error",
+      {
+        "bracketSpacing": true,
+        "jsxBracketSameLine": false,
+        "parser": "flow",
+        "printWidth": 100,
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "all"
+      }
+    ],
+    "no-console": [
+      "error",
+      {
+        "allow": ["info", "warn"]
+      }
+    ]
+  },
+  "globals": {
+    "__DEV__": true
+  }
+}
