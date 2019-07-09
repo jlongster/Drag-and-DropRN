@@ -215,7 +215,9 @@ const App = () => {
             >
               <Animated.ScrollView
                 contentContainerStyle={styles.container}
+                onMomentumScrollEnd={handleMomentumScrollEnd}
                 onScroll={onScroll({ y: scrollY })}
+                onScrollBeginDrag={handleScrollBeginDrag}
                 scrollEnabled={!dragging}
                 scrollEventThrottle={16}
               >
