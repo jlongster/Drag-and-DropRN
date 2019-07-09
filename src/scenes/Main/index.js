@@ -1,121 +1,166 @@
-import React from 'react'
-import { Dimensions, ScrollView, Text, FlatList, StyleSheet, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { LongPressGestureHandler, TapGestureHandler } from 'react-native-gesture-handler'
+import React, { useState, useRef } from 'react'
+import { Dimensions, ScrollView, Text, FlatList, StyleSheet, View } from 'react-native'
+import {
+  State as GestureState,
+  LongPressGestureHandler,
+  TapGestureHandler,
+} from 'react-native-gesture-handler'
+import { onScroll } from 'react-native-redash'
+import { get } from 'lodash'
 
-import timeGridParts, { timeGridHeight } from 'src/helpers/timeGridParts'
+import timeGridParts, { timeGridHeight, minuteHeight } from 'src/helpers/timeGridParts'
 import days from 'src/helpers/days'
 
 const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window')
+const TOP_MARGIN = 60
+const {
+  add,
+  multiply,
+  interpolate,
+  divide,
+  cond,
+  Value,
+  call,
+  event,
+  eq,
+  block,
+  set,
+  greaterOrEq,
+  abs,
+  sub,
+} = Animated
+
+const renderTimeGrid = () => (
+  <View
+    style={{
+      height: timeGridHeight,
+      width: deviceWidth,
+      borderBottomWidth: 1,
+      borderRightWidth: 1,
+      borderColor: 'black',
+    }}
+  />
+)
+
+const getItemLayout = (data, index) => ({
+  length: deviceWidth,
+  offset: index * deviceWidth,
+  index,
+})
+
+const renderTimeIndicator = ({ item }) => (
+  <View style={{ height: timeGridHeight, borderRightWidth: 1, width: 40 }}>
+    <Text>{item}</Text>
+  </View>
+)
 
 const App = () => {
-  const renderTimeGrid = () => (
-    <View
-      style={{
-        height: timeGridHeight,
-        width: deviceWidth,
-        borderBottomWidth: 1,
-        borderRightWidth: 1,
-        borderColor: 'black',
-      }}
-    />
+  const [{ dragX, scrollY, dragTop, previewHeight, dragY, yOffset, shouldSetOffset }] = useState({
+    dragTop: new Value(0),
+    scrollY: new Value(0),
+    dragX: new Value(0),
+    dragY: new Value(0),
+    previewHeight: new Value(0),
+    shouldSetOffset: new Value(0),
+    yOffset: new Value(0),
+  })
+  const [events, setEvents] = useState({})
+  const currentDayIndex = useRef(14)
+
+  const handleLongPressGestureEvent = useRef(
+    event([
+      {
+        nativeEvent: ({ numberOfPointers, x, y, absoluteY, absoluteX, state }) =>
+          cond(
+            block([
+              set(dragX, absoluteX),
+              set(dragY, absoluteY),
+              cond(eq(state, GestureState.ACTIVE), [
+                cond(eq(shouldSetOffset, 1), [
+                  set(shouldSetOffset, 0),
+                  set(yOffset, sub(absoluteY, TOP_MARGIN)),
+                  set(dragTop, add(sub(dragY, TOP_MARGIN), scrollY)),
+                ]),
+                set(previewHeight, add(minuteHeight * 15, sub(y, yOffset, scrollY))),
+              ]),
+              cond(eq(state, GestureState.END), [
+                set(dragTop, 0),
+                set(dragX, 0),
+                set(dragY, 0),
+                set(previewHeight, 0),
+                set(shouldSetOffset, 1),
+                call([previewHeight, dragTop], createCalendarEvent),
+              ]),
+            ]),
+          ),
+      },
+    ]),
   )
 
-  const renderTimeIndicator = ({ item }) => (
-    <View style={{ height: timeGridHeight, borderRightWidth: 1, width: 40 }}>
-      <Text>{item}</Text>
-    </View>
-  )
+  const createCalendarEvent = ([height, top]) => {
+    setEvents(events => {
+      const currentDayEvents = events[currentDayIndex]
 
-  // const handleTapStateChange = event([
-  //   {
-  //     nativeEvent: ({ numberOfPointers, state, absoluteX, absoluteY }) =>
-  //       cond(
-  //         eq(numberOfPointers, 1),
-  //         block([
-  //           set(this.absoluteX, absoluteX),
-  //           set(this.absoluteY, absoluteY),
-  //           cond(eq(state, 1), [call([], this.beginDrag)]),
-  //           cond(eq(state, GestureState.BEGAN), [call([], this.hidePreview)]),
-  //           cond(eq(state, GestureState.END), [
-  //             call([this.absoluteX, this.absoluteY], this.debounceActivateSingleBlockPreview),
-  //           ]),
-  //         ]),
-  //       ),
-  //   },
-  // ])
-
-  // const handleLongPressGestureEvent = event([
-  //   {
-  //     nativeEvent: ({ numberOfPointers, y, absoluteY, absoluteX, state }) =>
-  //       cond(
-  //         eq(numberOfPointers, 1),
-  //         block([
-  //           set(this.absoluteX, absoluteX),
-  //           set(this.absoluteY, absoluteY),
-  //           cond(eq(state, GestureState.BEGAN), [
-  //             set(this.yOffset, sub(absoluteY, this.listTop)),
-  //             call([], this.hidePreview),
-  //           ]),
-  //           cond(eq(state, GestureState.ACTIVE), [
-  //             cond(eq(this.shouldSetOffset, 1), [
-  //               set(this.shouldSetOffset, 0),
-  //               set(this.yOffset, sub(absoluteY, this.listTop)),
-  //             ]),
-  //             set(this.previewHeight, add(MINUTE_HEIGHT * 15, sub(y, this.yOffset))),
-  //             call([this.absoluteX, this.absoluteY], this.debounceActivatePreview),
-  //             set(this.dragDiff, add(this.dragDiff, diff(this.previewHeight))),
-  //             cond(greaterOrEq(abs(this.dragDiff), 5 * MINUTE_HEIGHT), [
-  //               set(this.dragDiff, 0),
-  //               call([], () => hapticFeedback(HAPTIC_MODE.IMPACT_LIGHT)),
-  //             ]),
-  //           ]),
-  //           cond(eq(state, GestureState.CANCELLED), [call([], this.handlePreviewFail)]),
-  //           cond(eq(state, GestureState.END), [
-  //             call([this.previewHeight], this.handleEventCreation),
-  //             set(this.absoluteX, 0),
-  //             set(this.absoluteY, 0),
-  //             set(this.shouldSetOffset, 1),
-  //           ]),
-  //         ]),
-  //       ),
-  //   },
-  // ])
+      return {
+        ...events,
+        [currentDayIndex]: [...currentDayEvents, { height, top }],
+      }
+    })
+  }
 
   const renderDay = ({ item }) => (
-    <TapGestureHandler>
+    <LongPressGestureHandler
+      maxDist={deviceHeight}
+      minDurationMs={250}
+      onGestureEvent={handleLongPressGestureEvent.current}
+      onHandlerStateChange={handleLongPressGestureEvent.current}
+    >
       <Animated.View>
-        <LongPressGestureHandler
-          maxDist={deviceHeight}
-          minDurationMs={250}
-          onGestureEvent={handleLongPressGestureEvent}
-          onHandlerStateChange={handleLongPressGestureEvent}
-        >
-          <Animated.View>
-            <Text style={{ position: 'absolute', alignSelf: 'center' }}>{item}</Text>
+        <Text style={{ position: 'absolute', alignSelf: 'center' }}>{item}</Text>
 
-            <FlatList
-              data={timeGridParts()}
-              keyExtractor={item => item}
-              listKey={`${item}-timeGrid`}
-              renderItem={renderTimeGrid}
-              scrollEnabled={false}
-              style={styles.timeGrid}
-            />
-          </Animated.View>
-        </LongPressGestureHandler>
+        {get(events, `${[item]}`, []).map(({ height, top }) => (
+          <View
+            key={top}
+            style={{
+              top,
+              height,
+              backgroundColor: 'blue',
+              position: 'absolute',
+            }}
+          />
+        ))}
+
+        <FlatList
+          data={timeGridParts()}
+          keyExtractor={item => item}
+          listKey={`${item}-timeGrid`}
+          renderItem={renderTimeGrid}
+          scrollEnabled={false}
+          style={styles.timeGrid}
+        />
       </Animated.View>
-    </TapGestureHandler>
+    </LongPressGestureHandler>
   )
 
-  getItemLayout = (data, index) => ({
-    length: deviceWidth,
-    offset: index * deviceWidth,
-    index,
-  })
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <Animated.ScrollView
+      contentContainerStyle={styles.container}
+      onScroll={onScroll({ y: scrollY })}
+      scrollEventThrottle={16}
+    >
+      <Animated.View
+        style={{
+          width: deviceWidth - 40,
+          left: 40,
+          position: 'absolute',
+          backgroundColor: 'red',
+          zIndex: 10,
+          top: cond(greaterOrEq(previewHeight, 0), dragTop, add(dragTop, previewHeight)),
+          height: abs(previewHeight),
+        }}
+      />
+
       <FlatList
         data={timeGridParts()}
         keyExtractor={item => item}
@@ -130,10 +175,11 @@ const App = () => {
         horizontal
         initialScrollIndex={14}
         keyExtractor={item => item}
+        // onScroll={handleHorizontalScroll}
         pagingEnabled
         renderItem={renderDay}
       />
-    </ScrollView>
+    </Animated.ScrollView>
   )
 }
 
@@ -141,7 +187,7 @@ export default App
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 60,
+    marginTop: TOP_MARGIN,
     paddingBottom: 60,
   },
   timeIndicator: {
